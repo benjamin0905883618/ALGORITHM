@@ -67,6 +67,7 @@ float distance(point *a,point *b){
     return sqrt(x_pow + y_pow);
 }
 float Closest_Pair(pointlist l){
+    //base case(小於三的點，用暴力解解開)
     if(l.size() <= 3){
         if(l.size() == 2)
             return distance(l.r_head()->next,l.r_head()->next->next);
@@ -75,19 +76,23 @@ float Closest_Pair(pointlist l){
         float me = distance(l.r_tail()->prev,l.r_tail()->prev->prev);
         return min(me,min(fe,fm));
     }
+    //Divide(切成左右兩半，兩邊點的數目需要相同)
     pointlist left_side;
-    //cout << left_side.size() << endl;
     int list_size = l.size();
     for(int i = 0;i < list_size/2;i++){
         left_side.push(l.top_x(),l.top_y());
         l.pop();
     }
+    //Conquer(分別找兩半邊的最短距離)
     float left_min = Closest_Pair(left_side);
     float right_min = Closest_Pair(l);
+    //Combine(兩半邊最短距離取其小，在對中間展開區域進行計算)
     float delta = min(left_min,right_min);
+    //尋找切分兩半的線
     float left_max_x = left_side.r_tail()->prev->x;
     float right_min_x= l.r_head()->next->x;
     float mid_vertical = (left_max_x + right_min_x) / 2;
+    //把中間部分圍出來的點抓出來
     pointlist middle;
     point* cursor = left_side.r_tail()->prev;
     while(mid_vertical - cursor-> x < delta && cursor != left_side.r_head()){
@@ -99,6 +104,7 @@ float Closest_Pair(pointlist l){
         middle.push(cursor->x,cursor->y);
         cursor = cursor->next;
     }
+    //兩兩求距離，如果比delta小就換過來
     for(point* i = middle.r_head()->next;i != middle.r_tail();i = i->next){
         for(point* j = i->next;j != middle.r_tail();j = j->next){
             delta = (distance(i,j) < delta) ? distance(i,j) : delta;
